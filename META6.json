@@ -8,10 +8,10 @@
     "LibXML",
     "URI"
   ],
-  "description":    "IBM POWER HMC REST API",
+  "description":    "IBM POWER HMC REST API - ManagedSystems LogicalPartitions",
   "license":        "Artistic-2.0",
   "meta-version":   0,
-  "name":           "Hypervisor::IBM::POWER::HMC::REST",
+  "name":           "Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::LogicalPartitions",
   "perl":           "6.*",
   "provides":       {
     "Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions": "lib/Hypervisor/IBM/POWER/HMC/REST/ManagedSystems/ManagedSystem/LogicalPartitions.rakumod",
@@ -30,7 +30,7 @@
     "Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition::PartitionProcessorConfiguration::SharedProcessorConfiguration": "lib/Hypervisor/IBM/POWER/HMC/REST/ManagedSystems/ManagedSystem/LogicalPartitions/LogicalPartition/PartitionProcessorConfiguration/SharedProcessorConfiguration.rakumod",
   },
   "resources":      [],
-  "source-url":     "",
+  "source-url":     "https://github.com/markldevine/raku-Hypervisor-IBM-POWER-HMC-REST-ManagedSystems-LogicalPartitions.git",
   "tags":           [
     "HMC",
     "REST"
