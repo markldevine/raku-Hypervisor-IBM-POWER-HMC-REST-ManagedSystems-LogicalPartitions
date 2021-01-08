@@ -143,7 +143,7 @@ method init () {
     $!HostEthernetAdapterLogicalPorts       = Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition::HostEthernetAdapterLogicalPorts.new(:$!config, :xml($!xml-HostEthernetAdapterLogicalPorts));
     $!HardwareAcceleratorQoS                = Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition::HardwareAcceleratorQoS.new(:$!config, :xml($!xml-HardwareAcceleratorQoS));
     $!BootListInformation                   = Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition::BootListInformation.new(:$!config, :xml($!xml-BootListInformation));
-    self.load                               if self.config.optimization-init-load;
+    self.load                               if self.config.optimizations.init-load;
     $!initialized                           = True;
     self;
 }

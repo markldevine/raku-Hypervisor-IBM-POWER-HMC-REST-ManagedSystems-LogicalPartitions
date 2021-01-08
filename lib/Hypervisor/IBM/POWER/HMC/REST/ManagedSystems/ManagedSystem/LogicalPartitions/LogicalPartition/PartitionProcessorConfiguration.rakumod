@@ -53,7 +53,7 @@ method init () {
     $!CurrentDedicatedProcessorConfiguration    = Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition::PartitionProcessorConfiguration::CurrentDedicatedProcessorConfiguration.new(:$!config, :xml(self.etl-branch(:TAG<CurrentDedicatedProcessorConfiguration>, :$!xml, :optional)));
     $!CurrentSharedProcessorConfiguration       = Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition::PartitionProcessorConfiguration::CurrentSharedProcessorConfiguration.new(:$!config, :xml(self.etl-branch(:TAG<CurrentSharedProcessorConfiguration>, :$!xml, :optional)));
     $!SharedProcessorConfiguration              = Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition::PartitionProcessorConfiguration::SharedProcessorConfiguration.new(:$!config, :xml(self.etl-branch(:TAG<SharedProcessorConfiguration>, :$!xml, :optional)));
-    self.load                                   if self.config.optimization-init-load;
+    self.load                                   if self.config.optimizations.init-load;
     $!initialized                               = True;
     self;
 }
