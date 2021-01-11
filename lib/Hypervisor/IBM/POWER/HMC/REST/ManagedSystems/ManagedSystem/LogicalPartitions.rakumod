@@ -2,6 +2,7 @@ need    Hypervisor::IBM::POWER::HMC::REST::Config;
 need    Hypervisor::IBM::POWER::HMC::REST::Config::Analyze;
 need    Hypervisor::IBM::POWER::HMC::REST::Config::Dump;
 need    Hypervisor::IBM::POWER::HMC::REST::Config::Optimize;
+use     Hypervisor::IBM::POWER::HMC::REST::Config::Traits;
 need    Hypervisor::IBM::POWER::HMC::REST::ETL::XML;
 need    Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition;
 unit    class Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions:api<1>:auth<Mark Devine (mark@markdevine.com)>
@@ -10,15 +11,13 @@ unit    class Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::
             does Hypervisor::IBM::POWER::HMC::REST::Config::Optimize
             does Hypervisor::IBM::POWER::HMC::REST::ETL::XML;
 
-my      Bool                                                                                                    $names-checked = False;
-my      Bool                                                                                                    $analyzed = False;
-my      Lock                                                                                                    $lock = Lock.new;
-
-has     Hypervisor::IBM::POWER::HMC::REST::Config                                                               $.config is required;
-has     Bool                                                                                                    $.initialized = False;
-has     Bool                                                                                                    $.loaded = False;
-has                                                                                                             $.Managed-System-Id is required;
-has     Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition   %.Logical-Partitions;
+my      Bool                                                                                                    $names-checked  = False;
+my      Bool                                                                                                    $analyzed       = False;
+my      Lock                                                                                                    $lock           = Lock.new;
+has     Hypervisor::IBM::POWER::HMC::REST::Config                                                               $.config        is required;
+has     Bool                                                                                                    $.initialized   = False;
+has                                                                                                             $.Managed-System-Id     is required;
+has     Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition   %.Logical-Partitions    is conditional-initialization-attribute;
 has                                                                                                             @.Logical-Partition-Ids;
 has                                                                                                             @.Logical-Partition-Names;
 has                                                                                                             %.Partition-Name-to-Id;
@@ -42,6 +41,7 @@ submethod TWEAK {
 
 method init () {
     return self                 if $!initialized;
+    return self                 unless self.attribute-is-accessed(self.^name, 'Logical-Partitions');
     self.config.diag.post:      self.^name ~ '::' ~ &?ROUTINE.name if %*ENV<HIPH_METHOD>;
     my $init-start              = now;
     my $fetch-start             = now;
