@@ -34,7 +34,6 @@ submethod TWEAK {
         if !$names-checked      { $proceed-with-name-check = True; $names-checked = True; }
     });
     self.etl-node-name-check    if $proceed-with-name-check;
-#   self.init;
     self.analyze                if $proceed-with-analyze;
     self;
 }
@@ -77,27 +76,6 @@ method init () {
     self.config.diag.post:      sprintf("%-20s %10s: %11s", self.^name.subst(/^.+'::'(.+)$/, {$0}), 'INITIALIZE', sprintf("%.3f", now - $init-start)) if %*ENV<HIPH_INIT>;
     self;
 }
-
-#method load () {
-#    return self             if $!loaded;
-#    self.init               unless $!initialized;
-#    self.config.diag.post:  self.^name ~ '::' ~ &?ROUTINE.name if %*ENV<HIPH_METHOD>;
-#    my $load-start          = now;
-#    my @entries             = self.etl-branches(:TAG<entry>, :$!xml);
-#    my @promises;
-#    for @!Logical-Partition-Ids -> $id {
-#        @promises.push: start {
-#            %!Logical-Partitions{$id}.load;
-#        }
-#    }
-#    unless await Promise.allof(@promises).then({ so all(@promises>>.result) }) {
-#        die &?ROUTINE.name ~ ': Not all promises were Kept!';
-#    }
-#    $!xml                   = Nil;
-#    $!loaded                = True;
-#    self.config.diag.post:  sprintf("%-20s %10s: %11s", self.^name.subst(/^.+'::'(.+)$/, {$0}), 'LOAD', sprintf("%.3f", now - $load-start)) if %*ENV<HIPH_LOAD>;
-#    self;
-#}
 
 method Logical-Partition-by-Id (Str:D $id is required) {
     self.config.diag.post: self.^name ~ '::' ~ &?ROUTINE.name if %*ENV<HIPH_METHOD>;
