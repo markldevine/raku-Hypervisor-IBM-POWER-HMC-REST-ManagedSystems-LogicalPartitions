@@ -2,6 +2,7 @@ need    Hypervisor::IBM::POWER::HMC::REST::Config;
 need    Hypervisor::IBM::POWER::HMC::REST::Config::Analyze;
 need    Hypervisor::IBM::POWER::HMC::REST::Config::Dump;
 need    Hypervisor::IBM::POWER::HMC::REST::Config::Optimize;
+use     Hypervisor::IBM::POWER::HMC::REST::Config::Traits;
 need    Hypervisor::IBM::POWER::HMC::REST::ETL::XML;
 unit    class Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition::PartitionProcessorConfiguration::CurrentDedicatedProcessorConfiguration:api<1>:auth<Mark Devine (mark@markdevine.com)>
             does Hypervisor::IBM::POWER::HMC::REST::Config::Analyze
@@ -9,17 +10,15 @@ unit    class Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::
             does Hypervisor::IBM::POWER::HMC::REST::Config::Optimize
             does Hypervisor::IBM::POWER::HMC::REST::ETL::XML;
 
-my      Bool                                        $names-checked = False;
-my      Bool                                        $analyzed = False;
-my      Lock                                        $lock = Lock.new;
-
-has     Hypervisor::IBM::POWER::HMC::REST::Config   $.config is required;
-has     Bool                                        $.initialized = False;
-has     Bool                                        $.loaded = False;
-has     Str                                         $.CurrentMaximumProcessors;
-has     Str                                         $.CurrentMinimumProcessors;
-has     Str                                         $.CurrentProcessors;
-has     Str                                         $.RunProcessors;
+my      Bool                                        $names-checked  = False;
+my      Bool                                        $analyzed       = False;
+my      Lock                                        $lock           = Lock.new;
+has     Hypervisor::IBM::POWER::HMC::REST::Config   $.config        is required;
+has     Bool                                        $.initialized   = False;
+has     Str                                         $.CurrentMaximumProcessors  is conditional-initialization-attribute;
+has     Str                                         $.CurrentMinimumProcessors  is conditional-initialization-attribute;
+has     Str                                         $.CurrentProcessors         is conditional-initialization-attribute;
+has     Str                                         $.RunProcessors             is conditional-initialization-attribute;
 
 method  xml-name-exceptions () { return set <Metadata>; }
 
@@ -38,23 +37,15 @@ submethod TWEAK {
 }
 
 method init () {
-    return self             if $!initialized;
-    self.config.diag.post:  self.^name ~ '::' ~ &?ROUTINE.name if %*ENV<HIPH_METHOD>;
-    return self             unless $!xml.DEFINITE;
-    self.load               if self.config.optimizations.init-load;
-    $!initialized           = True;
-    self;
-}
-
-method load () {
-    return self                 if $!loaded || ! $!xml.DEFINITE;
+    return self                 if $!initialized;
+    return self                 unless $!xml.DEFINITE;
     self.config.diag.post:      self.^name ~ '::' ~ &?ROUTINE.name if %*ENV<HIPH_METHOD>;
-    $!CurrentMaximumProcessors  = self.etl-text(:TAG<CurrentMaximumProcessors>, :$!xml);
-    $!CurrentMinimumProcessors  = self.etl-text(:TAG<CurrentMinimumProcessors>, :$!xml);
-    $!CurrentProcessors         = self.etl-text(:TAG<CurrentProcessors>,        :$!xml);
-    $!RunProcessors             = self.etl-text(:TAG<RunProcessors>,            :$!xml);
+    $!CurrentMaximumProcessors  = self.etl-text(:TAG<CurrentMaximumProcessors>, :$!xml) if self.attribute-is-accessed(self.^name, 'CurrentMaximumProcessors');
+    $!CurrentMinimumProcessors  = self.etl-text(:TAG<CurrentMinimumProcessors>, :$!xml) if self.attribute-is-accessed(self.^name, 'CurrentMinimumProcessors');
+    $!CurrentProcessors         = self.etl-text(:TAG<CurrentProcessors>,        :$!xml) if self.attribute-is-accessed(self.^name, 'CurrentProcessors');
+    $!RunProcessors             = self.etl-text(:TAG<RunProcessors>,            :$!xml) if self.attribute-is-accessed(self.^name, 'RunProcessors');
     $!xml                       = Nil;
-    $!loaded                    = True;
+    $!initialized               = True;
     self;
 }
 
