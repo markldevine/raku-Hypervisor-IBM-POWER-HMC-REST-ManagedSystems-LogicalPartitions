@@ -2,7 +2,6 @@ need    Hypervisor::IBM::POWER::HMC::REST::Config;
 need    Hypervisor::IBM::POWER::HMC::REST::Config::Analyze;
 need    Hypervisor::IBM::POWER::HMC::REST::Config::Dump;
 need    Hypervisor::IBM::POWER::HMC::REST::Config::Optimize;
-use     Hypervisor::IBM::POWER::HMC::REST::Config::Traits;
 need    Hypervisor::IBM::POWER::HMC::REST::ETL::XML;
 need    Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition;
 unit    class Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions:api<1>:auth<Mark Devine (mark@markdevine.com)>
@@ -11,13 +10,13 @@ unit    class Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::
             does Hypervisor::IBM::POWER::HMC::REST::Config::Optimize
             does Hypervisor::IBM::POWER::HMC::REST::ETL::XML;
 
-my      Bool                                                                                                    $names-checked  = False;
-my      Bool                                                                                                    $analyzed       = False;
-my      Lock                                                                                                    $lock           = Lock.new;
-has     Hypervisor::IBM::POWER::HMC::REST::Config                                                               $.config        is required;
-has     Bool                                                                                                    $.initialized   = False;
-has                                                                                                             $.Managed-System-Id     is required;
-has     Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition   %.Logical-Partitions    is conditional-initialization-attribute;
+my      Bool                                                                                                    $names-checked              = False;
+my      Bool                                                                                                    $analyzed                   = False;
+my      Lock                                                                                                    $lock                       = Lock.new;
+has     Hypervisor::IBM::POWER::HMC::REST::Config                                                               $.config                    is required;
+has     Bool                                                                                                    $.initialized               = False;
+has                                                                                                             $.Managed-System-Id         is required;
+has     Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition   %.Logical-Partitions;
 has                                                                                                             @.Logical-Partition-Ids;
 has                                                                                                             @.Logical-Partition-Names;
 has                                                                                                             %.Partition-Name-to-Id;
@@ -40,7 +39,6 @@ submethod TWEAK {
 
 method init () {
     return self                 if $!initialized;
-    return self                 unless self.attribute-is-accessed(self.^name, 'Logical-Partitions');
     self.config.diag.post:      self.^name ~ '::' ~ &?ROUTINE.name if %*ENV<HIPH_METHOD>;
     my $init-start              = now;
     my $fetch-start             = now;
@@ -72,6 +70,7 @@ method init () {
         %!Id-to-Partition-Name{$id} = $Partition-Name;
     }
     @!Logical-Partition-Names   = @logical-partition-names.sort;
+    $!xml                       = Nil;
     $!initialized               = True;
     self.config.diag.post:      sprintf("%-20s %10s: %11s", self.^name.subst(/^.+'::'(.+)$/, {$0}), 'INITIALIZE', sprintf("%.3f", now - $init-start)) if %*ENV<HIPH_INIT>;
     self;
@@ -90,3 +89,24 @@ method Logical-Partition-by-Name (Str:D $Name is required) {
 }
 
 =finish
+
+#method load () {
+#    return self             if $!loaded;
+#    self.init               unless $!initialized;
+#    self.config.diag.post:  self.^name ~ '::' ~ &?ROUTINE.name if %*ENV<HIPH_METHOD>;
+#    my $load-start          = now;
+#    my @entries             = self.etl-branches(:TAG<entry>, :$!xml);
+#    my @promises;
+#    for @!Logical-Partition-Ids -> $id {
+#        @promises.push: start {
+#            %!Logical-Partitions{$id}.load;
+#        }
+#    }
+#    unless await Promise.allof(@promises).then({ so all(@promises>>.result) }) {
+#        die &?ROUTINE.name ~ ': Not all promises were Kept!';
+#    }
+#    $!xml                   = Nil;
+#    $!loaded                = True;
+#    self.config.diag.post:  sprintf("%-20s %10s: %11s", self.^name.subst(/^.+'::'(.+)$/, {$0}), 'LOAD', sprintf("%.3f", now - $load-start)) if %*ENV<HIPH_LOAD>;
+#    self;
+#}
