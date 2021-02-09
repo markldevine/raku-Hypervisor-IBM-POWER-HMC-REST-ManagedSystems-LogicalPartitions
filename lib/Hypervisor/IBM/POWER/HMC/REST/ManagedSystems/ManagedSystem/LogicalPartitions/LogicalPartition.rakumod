@@ -13,7 +13,6 @@ need    Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::Logica
 need    Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition::HardwareAcceleratorQoS;
 need    Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition::BootListInformation;
 use     URI;
-use     LibXML;
 unit    class Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition:api<1>:auth<Mark Devine (mark@markdevine.com)>
             does Hypervisor::IBM::POWER::HMC::REST::Config::Analyze
             does Hypervisor::IBM::POWER::HMC::REST::Config::Dump
@@ -85,18 +84,16 @@ has     URI                                                                     
 has     URI                                                                                                                                     @.DedicatedVirtualNICs                  is conditional-initialization-attribute;
 has     Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition::BootListInformation              $.BootListInformation                   is conditional-initialization-attribute;
 
-method  xml-name-exceptions () { return set <Metadata author etag:etag link title content>; }
+method  xml-name-exceptions () { return set (); }
+#method  xml-name-exceptions () { return set <Metadata>; }
 
 submethod TWEAK {
     self.config.diag.post:      self.^name ~ '::' ~ &?ROUTINE.name if %*ENV<HIPH_SUBMETHOD>;
     self.config.diag.post:      sprintf("%-20s %10s: %11s", self.^name.subst(/^.+'::'(.+)$/, {$0}), 'START', 't' ~ $*THREAD.id) if %*ENV<HIPH_THREAD_START>;
-    my $proceed-with-name-check = False;
     my $proceed-with-analyze    = False;
     $lock.protect({
         if !$analyzed           { $proceed-with-analyze    = True; $analyzed      = True; }
-        if !$names-checked      { $proceed-with-name-check = True; $names-checked = True; }
     });
-    self.etl-node-name-check    if $proceed-with-name-check;
     self.init;
     self.analyze                if $proceed-with-analyze;
     self;
@@ -107,6 +104,13 @@ method init () {
     self.config.diag.post:                          self.^name ~ '::' ~ &?ROUTINE.name if %*ENV<HIPH_METHOD>;
     my $xml-content                                 = self.etl-branch(:TAG<content>,                                        :$!xml);
     my $xml-LogicalPartition                        = self.etl-branch(:TAG<LogicalPartition:LogicalPartition>,              :xml($xml-content));
+
+    my $proceed-with-name-check = False;
+    $lock.protect({
+        if !$names-checked                          { $proceed-with-name-check = True; $names-checked = True; }
+    });
+    self.etl-node-name-check(:xml($xml-LogicalPartition)) if $proceed-with-name-check;
+
     $!id                                            = self.etl-text(:TAG<id>,                                               :$!xml);
     $!PartitionName                                 = self.etl-text(:TAG<PartitionName>,                                    :xml($xml-LogicalPartition));
     $!atom                                          = self.etl-atom(:xml(self.etl-branch(:TAG<Metadata>,                    :xml($xml-LogicalPartition))))              if self.attribute-is-accessed(self.^name, 'atom');
