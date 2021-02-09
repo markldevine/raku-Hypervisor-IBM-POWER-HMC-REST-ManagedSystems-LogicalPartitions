@@ -72,7 +72,10 @@ has     Str                                                                     
 has     Str                                                                                                                                     $.OperatingSystemType                   is conditional-initialization-attribute;
 has     Str                                                                                                                                     $.PendingSecureBoot                     is conditional-initialization-attribute;
 has     Str                                                                                                                                     $.CurrentSecureBoot                     is conditional-initialization-attribute;
+has     Str                                                                                                                                     $.BootMode                              is conditional-initialization-attribute;
 has     Str                                                                                                                                     $.PowerOnWithHypervisor                 is conditional-initialization-attribute;
+has     Str                                                                                                                                     $.MigrationStorageViosDataStatus        is conditional-initialization-attribute;
+has     Str                                                                                                                                     $.MigrationStorageViosDataTimestamp     is conditional-initialization-attribute;
 has     Str                                                                                                                                     $.RemoteRestartCapable                  is conditional-initialization-attribute;
 has     Str                                                                                                                                     $.SimplifiedRemoteRestartCapable        is conditional-initialization-attribute;
 has     Str                                                                                                                                     $.HasDedicatedProcessorsForMigration    is conditional-initialization-attribute;
@@ -84,8 +87,7 @@ has     URI                                                                     
 has     URI                                                                                                                                     @.DedicatedVirtualNICs                  is conditional-initialization-attribute;
 has     Hypervisor::IBM::POWER::HMC::REST::ManagedSystems::ManagedSystem::LogicalPartitions::LogicalPartition::BootListInformation              $.BootListInformation                   is conditional-initialization-attribute;
 
-method  xml-name-exceptions () { return set (); }
-#method  xml-name-exceptions () { return set <Metadata>; }
+method  xml-name-exceptions () { return set <Metadata>; }
 
 submethod TWEAK {
     self.config.diag.post:      self.^name ~ '::' ~ &?ROUTINE.name if %*ENV<HIPH_SUBMETHOD>;
@@ -180,7 +182,10 @@ method init () {
     $!OperatingSystemType                           = self.etl-text(:TAG<OperatingSystemType>,                              :xml($xml-LogicalPartition))                if self.attribute-is-accessed(self.^name, 'OperatingSystemType');
     $!PendingSecureBoot                             = self.etl-text(:TAG<PendingSecureBoot>,                                :xml($xml-LogicalPartition))                if self.attribute-is-accessed(self.^name, 'PendingSecureBoot');
     $!CurrentSecureBoot                             = self.etl-text(:TAG<CurrentSecureBoot>,                                :xml($xml-LogicalPartition))                if self.attribute-is-accessed(self.^name, 'CurrentSecureBoot');
+    $!BootMode                                      = self.etl-text(:TAG<BootMode>,                                         :xml($xml-LogicalPartition))                if self.attribute-is-accessed(self.^name, 'BootMode');
     $!PowerOnWithHypervisor                         = self.etl-text(:TAG<PowerOnWithHypervisor>,                            :xml($xml-LogicalPartition))                if self.attribute-is-accessed(self.^name, 'PowerOnWithHypervisor');
+    $!MigrationStorageViosDataStatus                = self.etl-text(:TAG<MigrationStorageViosDataStatus>,                   :xml($xml-LogicalPartition))                if self.attribute-is-accessed(self.^name, 'MigrationStorageViosDataStatus');
+    $!MigrationStorageViosDataTimestamp             = self.etl-text(:TAG<MigrationStorageViosDataTimestamp>,                :xml($xml-LogicalPartition))                if self.attribute-is-accessed(self.^name, 'MigrationStorageViosDataTimestamp');
     $!RemoteRestartCapable                          = self.etl-text(:TAG<RemoteRestartCapable>,                             :xml($xml-LogicalPartition))                if self.attribute-is-accessed(self.^name, 'RemoteRestartCapable');
     $!SimplifiedRemoteRestartCapable                = self.etl-text(:TAG<SimplifiedRemoteRestartCapable>,                   :xml($xml-LogicalPartition))                if self.attribute-is-accessed(self.^name, 'SimplifiedRemoteRestartCapable');
     $!HasDedicatedProcessorsForMigration            = self.etl-text(:TAG<HasDedicatedProcessorsForMigration>,               :xml($xml-LogicalPartition))                if self.attribute-is-accessed(self.^name, 'HasDedicatedProcessorsForMigration');
